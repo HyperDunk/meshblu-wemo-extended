@@ -29,18 +29,48 @@ var OPTIONS_SCHEMA = {
   }
 };
 
+var ACTIONS_SCHEMA = {
+  type: 'object',
+  actions: {
+    on: {
+      type: 'object',
+      name: 'On'
+    },
+    off: {
+      type: 'object',
+      name: 'Off'
+    }
+  }
+};
+
+var ACTIONS_DEFAULTS = {
+  on: {
+    on: true
+  },
+  off: {
+    on: false
+  }
+};
+
 function Plugin(){
   var self = this;
   self.options = {};
   self.messageSchema = MESSAGE_SCHEMA;
   self.optionsSchema = OPTIONS_SCHEMA;
+  self.actionsSchema = ACTIONS_SCHEMA;
+  self.actions = ACTIONS_DEFAULTS;
   return self;
 }
 util.inherits(Plugin, EventEmitter);
 
 Plugin.prototype.onMessage = function(message){
   var self = this;
-  var payload = message.payload || {};
+  var payload = null;
+  if(message.payload.action) {
+    payload = self.actions[message.payload.action];
+  } else {
+    payload = message.payload || {};
+  }
   self.updateWemo(payload);
 };
 
@@ -124,5 +154,6 @@ Plugin.prototype.updateWemo = function(payload) {
 module.exports = {
   messageSchema: MESSAGE_SCHEMA,
   optionsSchema: OPTIONS_SCHEMA,
+  actionsSchema: ACTIONS_SCHEMA,
   Plugin: Plugin
 };
